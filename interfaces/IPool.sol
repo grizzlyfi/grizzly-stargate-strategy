@@ -9,6 +9,8 @@ interface ILpPool {
 
 	function poolId() external view returns (uint256); // Shared id between chains to represent same pool
 
+	function decimals() external view returns (uint256); // Decimals of pool token
+
 	function router() external view returns (address); // Router for the pool
 
 	/**

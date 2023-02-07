@@ -21,14 +21,20 @@ interface IBaseFee {
 	function basefee_global() external view returns (uint256);
 }
 
+interface IERC20Extended is IERC20 {
+	function decimals() external view returns (uint256);
+}
+
 contract Strategy is BaseStrategy {
 	using Address for address;
 	using SafeERC20 for IERC20;
 	using SafeMath for uint256;
 
 	IERC20 public rewardToken = IERC20(0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6); // Stargate Token
-	ILpPool public lpToken = ILpPool(0x38EA452219524Bb87e18dE1C24D3bB59510BD783); // USDT LP (S*USDT)
+	ILpPool public lpToken = ILpPool(0x0Faf1d2d3CED330824de3B8200fc8dc6E397850d); // DAI LP (S*DAI)
 	IERC20 internal constant weth = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // wETH
+
+	address internal immutable usdt = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
 
 	IStargateRouter public stargateRouter;
 	uint16 internal liquidityPoolId;
@@ -40,13 +46,13 @@ contract Strategy is BaseStrategy {
 		bytes32(0x4ce0bd7debf13434d3ae127430e9bd4291bfb61f00020000000000000000038b); // Balancer 50STG-50bb-a-USD (50STG-50b...)
 	bytes32 pool2Id =
 		bytes32(0xa13a9247ea42d743238089903570127dda72fe4400000000000000000000035d); // Balancer Aave Boosted StablePool (bb-a-USD)
-	// Note pool3Id changes for each want USDT, USDC, etc
+	// Note pool3Id changes for each want USDT, USDC, DAI etc
 	bytes32 pool3Id =
-		bytes32(0x2f4eb100552ef93840d5adc30560e5513dfffacb000000000000000000000334); // Balancer Aave Boosted Pool (USDT) (bb-a-USDT)
+		bytes32(0xae37d54ae477268b9997d4161b96b8200755935c000000000000000000000337); // Balancer Aave Boosted Pool (USDT) (bb-a-DAI)
 
 	address pool2 = address(0xA13a9247ea42D743238089903570127DdA72fE44); // Balancer Aave Boosted StablePool (bb-a-USD)
-	// Note pool3 changes for each want USDT, USDC, etc
-	address pool3 = address(0x2F4eb100552ef93840d5aDC30560E5513DFfFACb); // Balancer Aave Boosted Pool (USDT) (bb-a-USDT)
+	// Note pool3 changes for each want USDT, USDC,DAI etc
+	address pool3 = address(0xae37D54Ae477268B9997d4161B96b8200755935c); // Balancer Aave Boosted Pool (DAI) (bb-a-DAI)
 
 	bool internal abandonRewards;
 	uint256 public wantDust;
@@ -60,8 +66,8 @@ contract Strategy is BaseStrategy {
 	IUni internal constant router = IUni(0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F); // SushiSwap for quoting
 
 	bool public collectFeesEnabled = false;
-	uint256 public maxSlippageIn = 5; // bps
-	uint256 public maxSlippageOut = 5; // bps
+	uint256 public maxSlippageIn = 5000; // bps
+	uint256 public maxSlippageOut = 5000; // bps
 	uint256 internal constant basisOne = 10000;
 
 	uint256 public minProfit;
@@ -82,14 +88,14 @@ contract Strategy is BaseStrategy {
 		maxReportDelay = 30 days;
 		minProfit = 1e9; // 1000 USDT
 
-		wantDust = 1e6;
+		wantDust = 1e18;
 		rewardsDust = 1e18;
 
 		stargateRouter = IStargateRouter(_stargateRouter); // 0x8731d54E9D02c286767d56ac03e8037C07e01e98
-		liquidityPoolId = _liquidityPoolId; // 1 is USDC, 2 is USDT
+		liquidityPoolId = _liquidityPoolId; // 1 is USDC, 2 is USDT, 3 is DAI
 
 		masterChef = IMasterChef(_masterChef); // 0xB0D502E938ed5f4df2E681fE6E419ff29631d62b
-		masterChefPoolId = _masterChefPoolId; // 0 is USDC, 1 is USDT
+		masterChefPoolId = _masterChefPoolId; // 0 is USDC, 1 is USDT, 3 is DAI
 		require(
 			address(masterChef.poolInfo(masterChefPoolId).lpToken) == address(lpToken),
 			"Wrong pool"
@@ -135,7 +141,9 @@ contract Strategy is BaseStrategy {
 	}
 
 	function wantToLPToken(uint256 _wantAmount) public view returns (uint256) {
-		return _wantAmount.mul(lpToken.totalSupply()).div(lpToken.totalLiquidity()); // ibTkn
+		// uint256 factorCorrection = 10 **
+		// 	((IERC20Extended(address(want)).decimals()).sub(lpToken.decimals()));
+		return _wantAmount.mul(lpToken.totalSupply()).div(lpToken.totalLiquidity()).div(1e12); // DAI has 18 decimals but LpToken (S*DAI) only 6
 	}
 
 	function pendingRewards() public view returns (uint256 _pendingRewards) {
@@ -148,7 +156,7 @@ contract Strategy is BaseStrategy {
 		address[] memory rewardToWant = new address[](3);
 		rewardToWant[0] = address(rewardToken);
 		rewardToWant[1] = address(weth);
-		rewardToWant[2] = address(want);
+		rewardToWant[2] = usdt;
 
 		if (_stargateBalance > 0) {
 			uint256 priceInWant = router.getAmountsOut(1e18, rewardToWant)[rewardToWant.length - 1];
