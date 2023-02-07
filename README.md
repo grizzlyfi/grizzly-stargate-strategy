@@ -48,7 +48,7 @@ export ETHERSCAN_TOKEN=YourApiToken
 4. Download the mix.
 
 ```bash
-brownie bake yearn-strategy
+brownie bake strategy
 ```
 
 ## Basic Use
@@ -61,7 +61,7 @@ To deploy the demo Yearn Strategy in a development environment:
 $ brownie console
 ```
 
-2. Create variables for the Yearn Vault and Want Token addresses. These were obtained from the Yearn Registry. We load them from a different repository found in the brownie-config.yml under dependencies (yearn/yearn-vaults@0.4.3):
+2. Create variables for the Vault and Want Token addresses. These were obtained from the Yearn Registry. We load them from a different repository found in the brownie-config.yml under dependencies (yearn/yearn-vaults@0.4.3):
 
 ```python
 from pathlib import Path
@@ -192,7 +192,7 @@ If you are using Ganache to fork a network, then you may have issues with the bl
 
 # Resources
 
-- Yearn [Discord channel](https://discord.com/invite/6PNv2nF/)
+- Grizzly [Discord channel](https://discord.com/invite/grizzlyfi)
 - Brownie [Gitter channel](https://gitter.im/eth-brownie/community)
 
 - Balancer errors [Github file](https://github.com/balancer-labs/balancer-sdk/blob/cda1ad9fa387ca1727997a3a17f9e9e0cce87784/balancer-js/src/utils/errors.ts)
