@@ -1,0 +1,12 @@
+# Brownie
+__pycache__
+.history
+.hypothesis/
+build/
+reports/
+.env
+.pytest_cache
+
+# Node/npm
+node_modules/
+.env
