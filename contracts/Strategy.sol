@@ -27,13 +27,11 @@ contract Strategy is BaseStrategy {
 	using SafeMath for uint256;
 
 	IERC20 public rewardToken = IERC20(0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6); // Stargate Token
-	ILpPool public lpToken = ILpPool(0x38EA452219524Bb87e18dE1C24D3bB59510BD783); // USDT LP (S*USDT)
+	ILpPool public lpToken = ILpPool(0xdf0770dF86a8034b3EFEf0A1Bb3c889B8332FF56); // Note this changes USDC LP (S*USDC)
 	IERC20 internal constant weth = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // wETH
 
 	IStargateRouter public stargateRouter;
 	uint16 internal liquidityPoolId;
-
-	address internal constant uniRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564; // For UniV3 swaps
 
 	IBalancerVault internal balancerVault =
 		IBalancerVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
@@ -44,11 +42,11 @@ contract Strategy is BaseStrategy {
 		bytes32(0xa13a9247ea42d743238089903570127dda72fe4400000000000000000000035d); // Balancer Aave Boosted StablePool (bb-a-USD)
 	// Note pool3Id changes for each want USDT, USDC, etc
 	bytes32 pool3Id =
-		bytes32(0x2f4eb100552ef93840d5adc30560e5513dfffacb000000000000000000000334); // Balancer Aave Boosted Pool (USDT) (bb-a-USDT)
+		bytes32(0x82698aecc9e28e9bb27608bd52cf57f704bd1b83000000000000000000000336); // Balancer Aave Boosted Pool (USDC) (bb-a-USDC)
 
 	address pool2 = address(0xA13a9247ea42D743238089903570127DdA72fE44); // Balancer Aave Boosted StablePool (bb-a-USD)
 	// Note pool3 changes for each want USDT, USDC, etc
-	address pool3 = address(0x2F4eb100552ef93840d5aDC30560E5513DFfFACb); // Balancer Aave Boosted Pool (USDT) (bb-a-USDT)
+	address pool3 = address(0x82698aeCc9E28e9Bb27608Bd52cF57f704BD1B83); // Balancer Aave Boosted Pool (USDC) (bb-a-USDC)
 
 	bool internal abandonRewards;
 	uint256 public wantDust;
@@ -82,7 +80,7 @@ contract Strategy is BaseStrategy {
 		uint16 _liquidityPoolId
 	) public BaseStrategy(_vault) {
 		maxReportDelay = 30 days;
-		minProfit = 1e9; // 1000 USDT
+		minProfit = 1e9; // 1000 USDC
 
 		wantDust = 1e6;
 		rewardsDust = 1e18;
