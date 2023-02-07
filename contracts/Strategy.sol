@@ -33,8 +33,6 @@ contract Strategy is BaseStrategy {
 	IStargateRouter public stargateRouter;
 	uint16 internal liquidityPoolId;
 
-	address internal constant uniRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564; // For UniV3 swaps
-
 	IBalancerVault internal balancerVault =
 		IBalancerVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
 
