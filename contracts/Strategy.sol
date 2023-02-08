@@ -11,42 +11,23 @@ import { Address } from "./library/Address.sol";
 import { ERC20 } from "./library/ERC20.sol";
 import { Math } from "./library/Math.sol";
 
-import { IBalancerVault, IBalancerPool, IAsset } from "../interfaces/BalancerV2.sol";
 import { IStargateRouter } from "../interfaces/IStargateRouter.sol";
 import { IMasterChef } from "../interfaces/IMasterChef.sol";
 import { IUni } from "../interfaces/IUniswapV2Router02.sol";
 import { ILpPool } from "../interfaces/IPool.sol";
-
-interface IBaseFee {
-	function basefee_global() external view returns (uint256);
-}
 
 contract Strategy is BaseStrategy {
 	using Address for address;
 	using SafeERC20 for IERC20;
 	using SafeMath for uint256;
 
-	IERC20 public rewardToken = IERC20(0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6); // Stargate Token
-	ILpPool public lpToken = ILpPool(0x38EA452219524Bb87e18dE1C24D3bB59510BD783); // USDT LP (S*USDT)
-	IERC20 internal constant weth = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // wETH
+	IERC20 public rewardToken = IERC20(0xB0D502E938ed5f4df2E681fE6E419ff29631d62b); // Stargate Token
+	ILpPool public lpToken = ILpPool(0x9aA83081AA06AF7208Dcc7A4cB72C94d057D2cda); // USDT LP (S*USDT)
+
+	address internal constant busd = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
 
 	IStargateRouter public stargateRouter;
 	uint16 internal liquidityPoolId;
-
-	IBalancerVault internal balancerVault =
-		IBalancerVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
-
-	bytes32 pool1Id =
-		bytes32(0x4ce0bd7debf13434d3ae127430e9bd4291bfb61f00020000000000000000038b); // Balancer 50STG-50bb-a-USD (50STG-50b...)
-	bytes32 pool2Id =
-		bytes32(0xa13a9247ea42d743238089903570127dda72fe4400000000000000000000035d); // Balancer Aave Boosted StablePool (bb-a-USD)
-	// Note pool3Id changes for each want USDT, USDC, etc
-	bytes32 pool3Id =
-		bytes32(0x2f4eb100552ef93840d5adc30560e5513dfffacb000000000000000000000334); // Balancer Aave Boosted Pool (USDT) (bb-a-USDT)
-
-	address pool2 = address(0xA13a9247ea42D743238089903570127DdA72fE44); // Balancer Aave Boosted StablePool (bb-a-USD)
-	// Note pool3 changes for each want USDT, USDC, etc
-	address pool3 = address(0x2F4eb100552ef93840d5aDC30560E5513DFfFACb); // Balancer Aave Boosted Pool (USDT) (bb-a-USDT)
 
 	bool internal abandonRewards;
 	uint256 public wantDust;
@@ -57,7 +38,7 @@ contract Strategy is BaseStrategy {
 
 	uint256 internal constant MAX = type(uint256).max;
 
-	IUni internal constant router = IUni(0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F); // SushiSwap for quoting
+	IUni internal constant router = IUni(0x10ED43C718714eb63d5aA57B78B54704E256024E); // PancakeSwap
 
 	bool public collectFeesEnabled = false;
 	uint256 public maxSlippageIn = 5; // bps
@@ -67,11 +48,6 @@ contract Strategy is BaseStrategy {
 	uint256 public minProfit;
 	bool internal forceHarvestTriggerOnce;
 
-	IBaseFee internal constant baseFeeProvider =
-		IBaseFee(0xf8d0Ec04e94296773cE20eFbeeA82e76220cD549);
-
-	uint256 public maxAcceptableBaseFee = 15 gwei; // Max acceptable base fee for keeper harvest
-
 	constructor(
 		address _vault,
 		address _masterChef,
@@ -80,16 +56,16 @@ contract Strategy is BaseStrategy {
 		uint16 _liquidityPoolId
 	) public BaseStrategy(_vault) {
 		maxReportDelay = 30 days;
-		minProfit = 1e9; // 1000 USDT
+		minProfit = 1e21; // 1000 USDT
 
-		wantDust = 1e6;
+		wantDust = 1e18; // USDT in BSC has 18 decimals
 		rewardsDust = 1e18;
 
-		stargateRouter = IStargateRouter(_stargateRouter); // 0x8731d54E9D02c286767d56ac03e8037C07e01e98
-		liquidityPoolId = _liquidityPoolId; // 1 is USDC, 2 is USDT
+		stargateRouter = IStargateRouter(_stargateRouter); // 0x4a364f8c717cAAD9A442737Eb7b8A55cc6cf18D8
+		liquidityPoolId = _liquidityPoolId; // 2 is USDT
 
-		masterChef = IMasterChef(_masterChef); // 0xB0D502E938ed5f4df2E681fE6E419ff29631d62b
-		masterChefPoolId = _masterChefPoolId; // 0 is USDC, 1 is USDT
+		masterChef = IMasterChef(_masterChef); // 0x3052A0F6ab15b4AE1df39962d5DdEFacA86DaB47
+		masterChefPoolId = _masterChefPoolId; // 0 is USDT
 		require(
 			address(masterChef.poolInfo(masterChefPoolId).lpToken) == address(lpToken),
 			"Wrong pool"
@@ -135,7 +111,7 @@ contract Strategy is BaseStrategy {
 	}
 
 	function wantToLPToken(uint256 _wantAmount) public view returns (uint256) {
-		return _wantAmount.mul(lpToken.totalSupply()).div(lpToken.totalLiquidity()); // ibTkn
+		return _wantAmount.mul(lpToken.totalSupply()).div(lpToken.totalLiquidity()).div(1e12); // Need scaling LpToken has 6 decimals
 	}
 
 	function pendingRewards() public view returns (uint256 _pendingRewards) {
@@ -147,8 +123,8 @@ contract Strategy is BaseStrategy {
 
 		address[] memory rewardToWant = new address[](3);
 		rewardToWant[0] = address(rewardToken);
-		rewardToWant[1] = address(weth);
-		rewardToWant[2] = address(want);
+		rewardToWant[1] = busd; // BUSD
+		rewardToWant[2] = address(want); // There is a pool for BUSD-USDT in Pancake
 
 		if (_stargateBalance > 0) {
 			uint256 priceInWant = router.getAmountsOut(1e18, rewardToWant)[rewardToWant.length - 1];
@@ -281,39 +257,21 @@ contract Strategy is BaseStrategy {
 	// Sell from reward token to want
 	function _sellAllRewards() internal {
 		uint256 rewardsBalance = balanceOfReward();
+
+		address[] memory path = new address[](3);
+		path[0] = address(rewardToken);
+		path[1] = busd;
+		path[2] = address(want);
+
 		if (rewardsBalance > rewardsDust) {
-			_exitPoolExactBpt(rewardsBalance);
+			router.swapExactTokensForTokens(
+				rewardsBalance,
+				uint256(0),
+				path,
+				address(this),
+				block.timestamp
+			);
 		}
-	}
-
-	function _exitPoolExactBpt(uint256 _bpts) internal {
-		// EXIT POOL SWAP STEPS
-		IBalancerVault.BatchSwapStep[] memory batchSwapStep = new IBalancerVault.BatchSwapStep[](
-			3
-		);
-		batchSwapStep[0] = IBalancerVault.BatchSwapStep(pool1Id, 0, 1, _bpts, abi.encode(0));
-		batchSwapStep[1] = IBalancerVault.BatchSwapStep(pool2Id, 1, 2, 0, abi.encode(0));
-		batchSwapStep[2] = IBalancerVault.BatchSwapStep(pool3Id, 2, 3, 0, abi.encode(0));
-
-		// EXIT POOL ASSETS ORDER
-		IAsset[] memory setAssets = new IAsset[](4);
-		setAssets[0] = IAsset(address(rewardToken));
-		setAssets[1] = IAsset(address(pool2));
-		setAssets[2] = IAsset(address(pool3));
-		setAssets[3] = IAsset(address(want));
-
-		// SWAP LIMITS
-		int256[] memory limits = new int256[](4);
-		limits[0] = int256(_bpts);
-
-		balancerVault.batchSwap(
-			IBalancerVault.SwapKind.GIVEN_IN,
-			batchSwapStep,
-			setAssets,
-			IBalancerVault.FundManagement(address(this), false, address(this), false),
-			limits,
-			block.timestamp
-		);
 	}
 
 	function _claimRewards() internal {
@@ -361,8 +319,8 @@ contract Strategy is BaseStrategy {
 	}
 
 	function _giveAllowanceRouter() internal {
-		rewardToken.approve(address(balancerVault), 0);
-		rewardToken.approve(address(balancerVault), MAX);
+		rewardToken.approve(address(router), 0);
+		rewardToken.approve(address(router), MAX);
 	}
 
 	function _giveAllowances() internal {
@@ -446,26 +404,11 @@ contract Strategy is BaseStrategy {
 		// Harvest no matter what once we reach our maxDelay
 		if (block.timestamp.sub(params.lastReport) > maxReportDelay) return true;
 
-		// Check if the base fee gas price is higher than we allow. if it is, block harvests
-		if (!_isBaseFeeAcceptable()) return false;
-
 		// Trigger if we want to manually harvest, but only if our gas price is acceptable
 		if (forceHarvestTriggerOnce) return true;
 
 		// Otherwise, we don't harvest
 		return false;
-	}
-
-	// Check if the current baseFee is below our external target.
-	function _isBaseFeeAcceptable() internal view returns (bool) {
-		uint256 baseFee = baseFeeProvider.basefee_global();
-		if (baseFee < maxAcceptableBaseFee) return true;
-
-		return false;
-	}
-
-	function setMaxAcceptableBaseFee(uint256 _maxAcceptableBaseFee) external onlyKeepers {
-		maxAcceptableBaseFee = _maxAcceptableBaseFee;
 	}
 
 	function setMinProfit(uint256 _minAcceptableProfit) external onlyKeepers {

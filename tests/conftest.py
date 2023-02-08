@@ -11,7 +11,7 @@ sys.path.append( strategyDeploy_dir )
 from deployStrategy import addHealthCheck, deploy
 
 # use this to set what chain we use. 1 for ETH, 250 for fantom
-chain_used = 1
+chain_used = 102
 
 @pytest.fixture
 def gov(accounts):
@@ -61,17 +61,17 @@ def keeper(accounts):
 
 @pytest.fixture
 def token():
-    token_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"  # this should be the address of the ERC-20 used by the strategy/vault (USDT / USDC)
+    token_address = "0x55d398326f99059fF775485246999027B3197955"  # address of the ERC-20 used by the strategy/vault (Binance-Peg BSC-USD (BSC-USD))
     yield Contract.from_explorer(token_address)
 
 @pytest.fixture
 def dai():
-    token_address = "0x6B175474E89094C44Da98b954EedeAC495271d0F"  # this DAI for sweep testing
+    token_address = "0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3"  # this DAI for sweep testing (Binance-Peg Dai Token (DAI))
     yield Contract.from_explorer(token_address)
 
 @pytest.fixture
 def userWithDAI(accounts):
-    yield accounts.at("0xf977814e90da44bfa03b6295a0616a897441acec", force=True)
+    yield accounts.at("0x8894e0a0c962cb723c1976a4421c95949be2d4e3", force=True)
 
 @pytest.fixture
 def userWithWeth(accounts):
@@ -79,17 +79,17 @@ def userWithWeth(accounts):
     
 @pytest.fixture
 def token_whale(accounts):
-    token_address = "0x5754284f345afc66a98fbb0a0afe71e0f007b949"  # this should be the address of the ERC-20 used by the strategy/vault (DAI)
+    token_address = "0xf977814e90da44bfa03b6295a0616a897441acec"  # this should be the address of the ERC-20 used by the strategy/vault (DAI)
     yield accounts.at(token_address,force=True)
 
 @pytest.fixture
 def reward():
-    token_address = "0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6"
+    token_address = "0xB0D502E938ed5f4df2E681fE6E419ff29631d62b" # StargateToken (STG)
     yield Contract.from_explorer(token_address)
 
 @pytest.fixture
 def reward_whale(accounts):
-    token_address = "0x28c6c06298d514db089934071355e5743bf21d60"
+    token_address = "0x8894e0a0c962cb723c1976a4421c95949be2d4e3"
     return accounts.at(token_address, force=True)
 
 
@@ -98,7 +98,7 @@ def amount(accounts, token, user):
     amount = 100_000 * 10 ** token.decimals()
     # In order to get some funds for the token you are about to use,
     # it impersonate an exchange address to use it's funds.
-    reserve = accounts.at("0x5754284f345afc66a98fbb0a0afe71e0f007b949", force=True)
+    reserve = accounts.at("0xf977814e90da44bfa03b6295a0616a897441acec", force=True)
     token.transfer(user, amount, {"from": reserve})
     yield amount
 
@@ -107,7 +107,7 @@ def amount2(accounts, token, user2):
     amount = 10_000 * 10 ** token.decimals()
     # In order to get some funds for the token you are about to use,
     # it impersonate an exchange address to use it's funds.
-    reserve = accounts.at("0x5754284f345afc66a98fbb0a0afe71e0f007b949", force=True)
+    reserve = accounts.at("0xf977814e90da44bfa03b6295a0616a897441acec", force=True)
     token.transfer(user2, amount, {"from": reserve})
     yield amount
 
@@ -116,14 +116,14 @@ def amount3(accounts, token, user3):
     amount = 100_000 * 10 ** token.decimals()
     # In order to get some funds for the token you are about to use,
     # it impersonate an exchange address to use it's funds.
-    reserve = accounts.at("0x5754284f345afc66a98fbb0a0afe71e0f007b949", force=True)
+    reserve = accounts.at("0xf977814e90da44bfa03b6295a0616a897441acec", force=True)
     token.transfer(user3, amount, {"from": reserve})
     yield amount
 
 
 @pytest.fixture
 def weth():
-    token_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+    token_address = "0x2170Ed0880ac9A755fd29B2688956BD959F933F8" # Binance-Peg Ethereum Token (ETH)
     yield Contract.from_explorer(token_address)
 
 
@@ -153,7 +153,7 @@ def strategy(strategist, keeper, vault, Strategy, gov):
     # strategy = strategist.deploy(Strategy, vault)
     strategy.setKeeper(keeper)
     vault.addStrategy(strategy, 10_000, 0, 2 ** 256 - 1, 0, {"from": gov})
-    strategy.setDust(1e18, 1e6, {"from": gov})
+    strategy.setDust(1e18, 1e18, {"from": gov})
     # addHealthCheck(strategy, gov, gov)
     # strategy.setHealthCheck(healthCheck, {"from": gov})
     # strategy.setDoHealthCheck(True, {"from": gov})

@@ -89,6 +89,9 @@ def test_funds_migration_abandonRewards(
     # strategy.harvest({"from":gov})
     strategy.setAbandonRewards(True, {"from": gov})
     vault.migrateStrategy(strategy, new_strategy, {"from": gov})
+    chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
     new_strategy.harvest({"from":gov})
     # assert that the old strategy does not have any funds
     assert strategy.estimatedTotalAssets() == 0
@@ -145,14 +148,15 @@ def test_migration(
     # Run strategy to make sure we are still earning money
     util.airdrop_rewards(new_strategy, reward, reward_whale)
     chain.mine(1)
-    new_strategy.setDust(1e18, 1e6, {"from": gov})
+    new_strategy.setDust(1e18, 1e18, {"from": gov})
     new_strategy.harvest({"from": gov})
 
     assert new_strategy.estimatedTotalAssets() >  newStratEstimatedAssets or vault.totalAssets() > vaultTotalAssets
 
-    new_strategy.harvest({"from":gov})
+    chain.mine(1)
     chain.sleep(3600*6)
     chain.mine(1)
+    new_strategy.harvest({"from":gov})
 
     assert vault.totalAssets() > amount
     assert vault.pricePerShare() > pricePerShare

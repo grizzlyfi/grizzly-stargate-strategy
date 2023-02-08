@@ -15,7 +15,11 @@ def test_revoke_strategy_from_vault(
     # In order to pass this tests, you will need to implement prepareReturn.
     vault.revokeStrategy(strategy, {"from": gov})
     chain.mine(1)
+    chain.sleep(3600*6)
+    chain.mine(1)
+
     strategy.harvest()
+
     assert strategy.estimatedTotalAssets() == 0
     assert pytest.approx(token.balanceOf(vault.address), rel=RELATIVE_APPROX) == strategyAssets
 

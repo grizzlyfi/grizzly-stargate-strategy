@@ -18,6 +18,8 @@ def test_trading_fees(chain, vault, gov ,strategy, token, amount, user, RELATIVE
     util.airdrop_rewards(strategy, reward, reward_whale)
 
     chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
 
     strategy.harvest({"from":gov})
 

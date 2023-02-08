@@ -83,9 +83,9 @@ def deploy(Strategy, deployer, gov ,vault):
 
     deployArgs= [
         vault, 
-        "0xB0D502E938ed5f4df2E681fE6E419ff29631d62b",# _masterChef
-        1, # _masterChefPoolId
-        "0x8731d54E9D02c286767d56ac03e8037C07e01e98", # _stargateRouter
+        "0x3052A0F6ab15b4AE1df39962d5DdEFacA86DaB47",# _masterChef
+        0, # _masterChefPoolId
+        "0x4a364f8c717cAAD9A442737Eb7b8A55cc6cf18D8", # _stargateRouter
         2, # _liquidityPoolId
     ] 	
 	

@@ -76,11 +76,15 @@ def test_operation_half_withdraw(
     util.airdrop_rewards(strategy, reward, reward_whale )
 
     chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
     strategy.harvest({"from":gov})
     assert vault.totalAssets() > amount
 
     time= 86400 # 100 days of work = 1/3 years
     util.airdrop_rewards(strategy, reward, reward_whale )
+    chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
     chain.mine(1)
     strategy.harvest({"from":gov})
 
@@ -123,10 +127,16 @@ def test_emergency_exit(
     assert pytest.approx(strategy.estimatedTotalAssets(), rel=RELATIVE_APPROX) == amount
 
     util.airdrop_rewards(strategy, reward, reward_whale)
-    chain.mine()
+    chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
     strategy.harvest()
     # set emergency and exit
     strategy.setEmergencyExit({"from":gov})
+    chain.mine(1)
+    chain.sleep(3600*6)
+    chain.mine(1)
+
     strategy.harvest({"from": gov})
 
     assert strategy.estimatedTotalAssets() < 1e5
@@ -346,6 +356,8 @@ def test_multiple_harvests(chain, gov,vault, strategy, token, amount, user, RELA
         time = 86400 * 10 # 1 day of running the strategy
         util.airdrop_rewards(strategy, reward, reward_whale )
         chain.mine(1)
+        chain.sleep(3600 * 7) # 1 day of running the strategy
+        chain.mine(1)
         strategy.harvest({"from":gov})
 
         chain.sleep(3600 * 6) # Wait for the funds to unlock
@@ -391,10 +403,15 @@ def test_correct_APR(chain,gov, vault, strategy, token, amount, user,  reward, r
     # for x in range(30):
     time = 86400 * 30 # 1 day of running the strategy
     util.airdrop_rewards(strategy, reward, reward_whale )
-    chain.sleep(3600)
+    chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
     chain.mine(1)
     strategy.harvest({"from":gov})
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
     strategy.harvest({"from":gov})
+    chain.mine(1)
+    print(f""" strategyAssets: {strategy.estimatedTotalAssets()}""")
     assert (strategy.estimatedTotalAssets() - stratInitialAssets ) / stratInitialAssets * 100 * 365 > 10
 
 def test_correct_APR_day(chain,gov, vault, strategy, token, amount, user, reward, reward_whale ):

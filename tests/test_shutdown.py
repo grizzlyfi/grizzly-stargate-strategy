@@ -52,6 +52,8 @@ def test_basic_shutdown(
     # Earn interest
     util.airdrop_rewards(strategy, reward, reward_whale)
     chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
     
     # Harvest 2: Realize profit
     strategy.harvest({"from":gov})

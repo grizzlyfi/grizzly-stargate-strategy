@@ -70,7 +70,9 @@ def test_losses_multiple_deposits_withdraw(
 
     # Withdrawal user3
     vaultShares = vault.balanceOf(user3)
-    vault.withdraw(vaultShares, user3, maxLoss * 3,{"from": user3})
+    print(f'vaultShares user3: {vault.balanceOf(user3)}')
+
+    vault.withdraw(vaultShares - 1e18, user3, maxLoss * 3,{"from": user3})
 
     assert pytest.approx(token.balanceOf(user3), rel=RELATIVE_APPROX) == user_3_balance_before
 
@@ -144,10 +146,12 @@ def test_singe_harvest_multiple_deposits_withdraw_1(
     # Harvest 2-7 to get rewards
     vaultAssets =  vault.totalAssets()
     util.airdrop_rewards(strategy, reward, reward_whale)
-    chain.mine()
+    chain.mine(1)
     chain.sleep(3600 * 7) # 1 day of running the strategy
     chain.mine(1)
     pendingRewards = strategy.pendingRewards()
+    print(f'pendingRewards: {strategy.pendingRewards()}')
+    print(f'balanceRewards: {strategy.balanceOfReward()}')
 
     strategy.harvest({"from": gov})
 
@@ -196,7 +200,9 @@ def test_multiple_harvest_deposits_withdraw(
     
     # Harvest 2 to get rewards
     util.airdrop_rewards(strategy, reward, reward_whale)
-    chain.mine()
+    chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
     strategy.harvest({"from": gov})
 
     print(f"""ETA: {strategy.estimatedTotalAssets()}""")
@@ -245,7 +251,9 @@ def test_singe_harvest_multiple_deposits_withdraw_2(
     # Harvest 2-7 to get rewards
     vaultAssets =  vault.totalAssets()
     util.airdrop_rewards(strategy, reward, reward_whale)
-    chain.mine()
+    chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
 
     strategy.harvest({"from": gov})
 
@@ -288,7 +296,9 @@ def test_debt_0_harvest(
     assert pytest.approx(strategy.estimatedTotalAssets(), rel=RELATIVE_APPROX) == totalDeposit
     
     util.airdrop_rewards(strategy, reward, reward_whale)
-    chain.mine()
+    chain.mine(1)
+    chain.sleep(3600 * 7) # 1 day of running the strategy
+    chain.mine(1)
 
     strategy.harvest({"from": gov})
     chain.sleep(3600* 7)
@@ -307,7 +317,7 @@ def test_debt_0_harvest(
     # withdrawal user
     maxLoss = 10 
     vaultShares = vault.balanceOf(user)
-    vault.withdraw(vaultShares - 1, user, maxLoss, {"from": user})
+    vault.withdraw(vaultShares - 1e18, user, maxLoss, {"from": user})
 
     assert token.balanceOf(user) > user_1_balance_before
     assert token.balanceOf(user) - user_1_balance_before > 200e6
@@ -368,7 +378,7 @@ def test_singe_harvest_multiple_deposits_withdraw_4(
     maxLoss = 10 
     print(f'Vault Shares User: {vault.balanceOf(user) / 10 ** vault.decimals()}')
     vaultShares = vault.balanceOf(user)
-    vault.withdraw(vaultShares - 1, user, maxLoss, {"from": user})
+    vault.withdraw(vaultShares - 1e18, user, maxLoss, {"from": user})
 
     userProfits = token.balanceOf(user) - user_1_balance_before
     print(f'Profits User: {userProfits / 10 ** token.decimals()}')
