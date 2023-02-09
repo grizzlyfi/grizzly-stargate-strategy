@@ -61,7 +61,7 @@ def keeper(accounts):
 
 @pytest.fixture
 def token():
-    token_address = "0x55d398326f99059fF775485246999027B3197955"  # address of the ERC-20 used by the strategy/vault (Binance-Peg BSC-USD (BSC-USD))
+    token_address = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"  # address of the ERC-20 used by the strategy/vault (Binance-Peg BSC-USD (BSC-USD))
     yield Contract.from_explorer(token_address)
 
 @pytest.fixture
@@ -79,7 +79,7 @@ def userWithWeth(accounts):
     
 @pytest.fixture
 def token_whale(accounts):
-    token_address = "0xf977814e90da44bfa03b6295a0616a897441acec"  # this should be the address of the ERC-20 used by the strategy/vault (DAI)
+    token_address = "0x8894e0a0c962cb723c1976a4421c95949be2d4e3"  # this should be the address of the ERC-20 used by the strategy/vault (DAI)
     yield accounts.at(token_address,force=True)
 
 @pytest.fixture
@@ -98,7 +98,7 @@ def amount(accounts, token, user):
     amount = 100_000 * 10 ** token.decimals()
     # In order to get some funds for the token you are about to use,
     # it impersonate an exchange address to use it's funds.
-    reserve = accounts.at("0xf977814e90da44bfa03b6295a0616a897441acec", force=True)
+    reserve = accounts.at("0x8894e0a0c962cb723c1976a4421c95949be2d4e3", force=True)
     token.transfer(user, amount, {"from": reserve})
     yield amount
 
@@ -107,7 +107,7 @@ def amount2(accounts, token, user2):
     amount = 10_000 * 10 ** token.decimals()
     # In order to get some funds for the token you are about to use,
     # it impersonate an exchange address to use it's funds.
-    reserve = accounts.at("0xf977814e90da44bfa03b6295a0616a897441acec", force=True)
+    reserve = accounts.at("0x8894e0a0c962cb723c1976a4421c95949be2d4e3", force=True)
     token.transfer(user2, amount, {"from": reserve})
     yield amount
 
@@ -116,7 +116,7 @@ def amount3(accounts, token, user3):
     amount = 100_000 * 10 ** token.decimals()
     # In order to get some funds for the token you are about to use,
     # it impersonate an exchange address to use it's funds.
-    reserve = accounts.at("0xf977814e90da44bfa03b6295a0616a897441acec", force=True)
+    reserve = accounts.at("0x8894e0a0c962cb723c1976a4421c95949be2d4e3", force=True)
     token.transfer(user3, amount, {"from": reserve})
     yield amount
 

@@ -22,9 +22,7 @@ contract Strategy is BaseStrategy {
 	using SafeMath for uint256;
 
 	IERC20 public rewardToken = IERC20(0xB0D502E938ed5f4df2E681fE6E419ff29631d62b); // Stargate Token
-	ILpPool public lpToken = ILpPool(0x9aA83081AA06AF7208Dcc7A4cB72C94d057D2cda); // USDT LP (S*USDT)
-
-	address internal constant busd = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
+	ILpPool public lpToken = ILpPool(0x98a5737749490856b401DB5Dc27F522fC314A4e1); // USDT LP (S*USDT)
 
 	IStargateRouter public stargateRouter;
 	uint16 internal liquidityPoolId;
@@ -56,16 +54,16 @@ contract Strategy is BaseStrategy {
 		uint16 _liquidityPoolId
 	) public BaseStrategy(_vault) {
 		maxReportDelay = 30 days;
-		minProfit = 1e21; // 1000 USDT
+		minProfit = 1e21; // 1000 BUSD
 
-		wantDust = 1e18; // USDT in BSC has 18 decimals
+		wantDust = 1e18; // BUSD in BSC has 18 decimals
 		rewardsDust = 1e18;
 
 		stargateRouter = IStargateRouter(_stargateRouter); // 0x4a364f8c717cAAD9A442737Eb7b8A55cc6cf18D8
-		liquidityPoolId = _liquidityPoolId; // 2 is USDT
+		liquidityPoolId = _liquidityPoolId; // 5 is BUSD
 
 		masterChef = IMasterChef(_masterChef); // 0x3052A0F6ab15b4AE1df39962d5DdEFacA86DaB47
-		masterChefPoolId = _masterChefPoolId; // 0 is USDT
+		masterChefPoolId = _masterChefPoolId; // 1 is BUSD
 		require(
 			address(masterChef.poolInfo(masterChefPoolId).lpToken) == address(lpToken),
 			"Wrong pool"
@@ -121,10 +119,9 @@ contract Strategy is BaseStrategy {
 	function estimatedHarvest() public view returns (uint256 _profitInUSDT) {
 		uint256 _stargateBalance = pendingRewards().add(balanceOfReward());
 
-		address[] memory rewardToWant = new address[](3);
+		address[] memory rewardToWant = new address[](2);
 		rewardToWant[0] = address(rewardToken);
-		rewardToWant[1] = busd; // BUSD
-		rewardToWant[2] = address(want); // There is a pool for BUSD-USDT in Pancake
+		rewardToWant[1] = address(want); // There is a pool for BUSD-USDT in Pancake
 
 		if (_stargateBalance > 0) {
 			uint256 priceInWant = router.getAmountsOut(1e18, rewardToWant)[rewardToWant.length - 1];
@@ -258,10 +255,9 @@ contract Strategy is BaseStrategy {
 	function _sellAllRewards() internal {
 		uint256 rewardsBalance = balanceOfReward();
 
-		address[] memory path = new address[](3);
+		address[] memory path = new address[](2);
 		path[0] = address(rewardToken);
-		path[1] = busd;
-		path[2] = address(want);
+		path[1] = address(want);
 
 		if (rewardsBalance > rewardsDust) {
 			router.swapExactTokensForTokens(
