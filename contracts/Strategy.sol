@@ -21,10 +21,6 @@ interface IBaseFee {
 	function basefee_global() external view returns (uint256);
 }
 
-interface IERC20Extended is IERC20 {
-	function decimals() external view returns (uint256);
-}
-
 contract Strategy is BaseStrategy {
 	using Address for address;
 	using SafeERC20 for IERC20;
@@ -66,8 +62,8 @@ contract Strategy is BaseStrategy {
 	IUni internal constant router = IUni(0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F); // SushiSwap for quoting
 
 	bool public collectFeesEnabled = false;
-	uint256 public maxSlippageIn = 5000; // bps
-	uint256 public maxSlippageOut = 5000; // bps
+	uint256 public maxSlippageIn = 5; // bps
+	uint256 public maxSlippageOut = 5; // bps
 	uint256 internal constant basisOne = 10000;
 
 	uint256 public minProfit;
@@ -141,8 +137,6 @@ contract Strategy is BaseStrategy {
 	}
 
 	function wantToLPToken(uint256 _wantAmount) public view returns (uint256) {
-		// uint256 factorCorrection = 10 **
-		// 	((IERC20Extended(address(want)).decimals()).sub(lpToken.decimals()));
 		return _wantAmount.mul(lpToken.totalSupply()).div(lpToken.totalLiquidity()).div(1e12); // DAI has 18 decimals but LpToken (S*DAI) only 6
 	}
 
@@ -184,7 +178,7 @@ contract Strategy is BaseStrategy {
 			_collectTradingFees();
 		}
 		_claimRewards(); // Claim Stargate rewards
-		_sellAllRewards(); // Sell Rewards for want (USDC) token
+		_sellAllRewards(); // Sell Rewards for want (DAI) token
 
 		uint256 debt = vault.strategies(address(this)).totalDebt;
 		uint256 balance = estimatedTotalAssets();
