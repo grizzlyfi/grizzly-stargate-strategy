@@ -3,28 +3,28 @@ from brownie import config, Contract, accounts
 
 import util
 
-# def test_deposit_withdraw(
-#     chain, token, vault,gov, strategy, user, amount, RELATIVE_APPROX
-# ):
-#     # Deposit to the vault
-#     user_balance_before = token.balanceOf(user)
-#     token.approve(vault.address, amount, {"from": user})
-#     vault.deposit(amount, {"from": user})
-#     assert token.balanceOf(vault.address) == amount
+def test_deposit_withdraw(
+    chain, token, vault,gov, strategy, user, amount, RELATIVE_APPROX
+):
+    # Deposit to the vault
+    user_balance_before = token.balanceOf(user)
+    token.approve(vault.address, amount, {"from": user})
+    vault.deposit(amount, {"from": user})
+    assert token.balanceOf(vault.address) == amount
 
-#     # harvest
-#     chain.sleep(1)
-#     chain.mine(1)
-#     strategy.harvest({"from": gov})
-#     balanceOfWant = strategy.balanceOfWant()
+    # harvest
+    chain.sleep(1)
+    chain.mine(1)
+    strategy.harvest({"from": gov})
+    balanceOfWant = strategy.balanceOfWant()
 
-#     # withdrawal
-#     vaultShares = vault.balanceOf(user)
-#     maxLoss = 10 # 0.55% BPS
-#     vault.withdraw(vaultShares, user, maxLoss, {"from": user})
-#     assert (
-#         pytest.approx(token.balanceOf(user), rel=RELATIVE_APPROX) == user_balance_before
-#     )
+    # withdrawal
+    vaultShares = vault.balanceOf(user)
+    maxLoss = 10 # 0.55% BPS
+    vault.withdraw(vaultShares, user, maxLoss, {"from": user})
+    assert (
+        pytest.approx(token.balanceOf(user), rel=RELATIVE_APPROX) == user_balance_before
+    )
 
 def test_losses_multiple_deposits_withdraw(
     chain, token, vault, strategy, gov, user, user2, user3, amount,amount2,amount3, RELATIVE_APPROX

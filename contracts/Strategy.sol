@@ -26,8 +26,8 @@ contract Strategy is BaseStrategy {
 	using SafeERC20 for IERC20;
 	using SafeMath for uint256;
 
-	IERC20 public rewardToken = IERC20(0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6); // Stargate Token
-	ILpPool public lpToken = ILpPool(0x0Faf1d2d3CED330824de3B8200fc8dc6E397850d); // DAI LP (S*DAI)
+	IERC20 public constant rewardToken = IERC20(0xAf5191B0De278C7286d6C7CC6ab6BB8A73bA2Cd6); // Stargate Token
+	ILpPool public constant lpToken = ILpPool(0x0Faf1d2d3CED330824de3B8200fc8dc6E397850d); // DAI LP (S*DAI)
 	IERC20 internal constant weth = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // wETH
 
 	address internal immutable usdt = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
@@ -38,23 +38,23 @@ contract Strategy is BaseStrategy {
 	IBalancerVault internal balancerVault =
 		IBalancerVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
 
-	bytes32 pool1Id =
+	bytes32 internal constant pool1Id =
 		bytes32(0x4ce0bd7debf13434d3ae127430e9bd4291bfb61f00020000000000000000038b); // Balancer 50STG-50bb-a-USD (50STG-50b...)
-	bytes32 pool2Id =
+	bytes32 internal constant pool2Id =
 		bytes32(0xa13a9247ea42d743238089903570127dda72fe4400000000000000000000035d); // Balancer Aave Boosted StablePool (bb-a-USD)
 	// Note pool3Id changes for each want USDT, USDC, DAI etc
-	bytes32 pool3Id =
+	bytes32 internal constant pool3Id =
 		bytes32(0xae37d54ae477268b9997d4161b96b8200755935c000000000000000000000337); // Balancer Aave Boosted Pool (USDT) (bb-a-DAI)
 
-	address pool2 = address(0xA13a9247ea42D743238089903570127DdA72fE44); // Balancer Aave Boosted StablePool (bb-a-USD)
+	address internal constant pool2 = address(0xA13a9247ea42D743238089903570127DdA72fE44); // Balancer Aave Boosted StablePool (bb-a-USD)
 	// Note pool3 changes for each want USDT, USDC,DAI etc
-	address pool3 = address(0xae37D54Ae477268B9997d4161B96b8200755935c); // Balancer Aave Boosted Pool (DAI) (bb-a-DAI)
+	address internal constant pool3 = address(0xae37D54Ae477268B9997d4161B96b8200755935c); // Balancer Aave Boosted Pool (DAI) (bb-a-DAI)
 
 	bool internal abandonRewards;
 	uint256 public wantDust;
 	uint256 public rewardsDust;
 
-	IMasterChef internal masterChef;
+	IMasterChef public masterChef;
 	uint256 internal masterChefPoolId;
 
 	uint256 internal constant MAX = type(uint256).max;
@@ -363,8 +363,8 @@ contract Strategy is BaseStrategy {
 	}
 
 	function _giveAllowanceRouter() internal {
-		rewardToken.approve(address(balancerVault), 0);
-		rewardToken.approve(address(balancerVault), MAX);
+		rewardToken.safeApprove(address(balancerVault), 0);
+		rewardToken.safeApprove(address(balancerVault), MAX);
 	}
 
 	function _giveAllowances() internal {

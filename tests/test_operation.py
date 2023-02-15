@@ -229,7 +229,6 @@ def test_profitability_of_strategy(
     vault.withdraw(vaultShares, user, maxLoss,{"from": user})
     assert token.balanceOf(user) > user_balance_before
     
-
 def test_change_debt(
     chain, gov, token,vault, strategy, user, amount, RELATIVE_APPROX
 ):
@@ -253,30 +252,31 @@ def test_change_debt(
     strategy.harvest({"from":gov})
     assert pytest.approx(strategy.estimatedTotalAssets(), rel=RELATIVE_APPROX) == half
 
-def test_sweep(gov, vault, strategy, token, user, userWithDAI, RELATIVE_APPROX, amount, dai):
-    # Strategy want token doesn't work
-    token.transfer(strategy, amount, {"from": user})
-    assert token.address == strategy.want()
-    assert token.balanceOf(strategy) > 0
-    with brownie.reverts("!want"):
-        strategy.sweep(token, {"from": gov})
+# Commented because dai is the want here
+# def test_sweep(gov, vault, strategy, token, user, userWithDAI, RELATIVE_APPROX, amount, dai):
+#     # Strategy want token doesn't work
+#     token.transfer(strategy, amount, {"from": user})
+#     assert token.address == strategy.want()
+#     assert token.balanceOf(strategy) > 0
+#     with brownie.reverts("!want"):
+#         strategy.sweep(token, {"from": gov})
 
-    # Vault share token doesn't work
-    with brownie.reverts("!shares"):
-        strategy.sweep(vault.address, {"from": gov})
+#     # Vault share token doesn't work
+#     with brownie.reverts("!shares"):
+#         strategy.sweep(vault.address, {"from": gov})
 
-    # Protected token doesn't work
-    # with brownie.reverts("!protected"):
-    #     strategy.sweep(strategy.protectedToken(), {"from": gov})
+#     # Protected token doesn't work
+#     # with brownie.reverts("!protected"):
+#     #     strategy.sweep(strategy.protectedToken(), {"from": gov})
 
-    before_balance = dai.balanceOf(gov)
-    transferAmount = 1000 * 1e18
-    dai.transfer(strategy, transferAmount, {"from": userWithDAI})
-    assert dai.address != strategy.want()
-    assert dai.balanceOf(user) < 1e18 # There is 0,14 DAI in accounts[0] 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-    strategy.sweep(dai, {"from": gov})
-    sumBal = transferAmount + before_balance
-    assert pytest.approx(dai.balanceOf(gov), rel=RELATIVE_APPROX) == sumBal
+#     before_balance = dai.balanceOf(gov)
+#     transferAmount = 1000 * 1e18
+#     dai.transfer(strategy, transferAmount, {"from": userWithDAI})
+#     assert dai.address != strategy.want()
+#     assert dai.balanceOf(user) < 1e18 # There is 0,14 DAI in accounts[0] 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+#     strategy.sweep(dai, {"from": gov})
+#     sumBal = transferAmount + before_balance
+#     assert pytest.approx(dai.balanceOf(gov), rel=RELATIVE_APPROX) == sumBal
 
 def test_autocompounding(chain, vault, strategy, token,gov, amount, user, RELATIVE_APPROX,  reward, reward_whale ):
     # Deposit to the vault
