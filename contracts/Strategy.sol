@@ -21,8 +21,8 @@ contract Strategy is BaseStrategy {
 	using SafeERC20 for IERC20;
 	using SafeMath for uint256;
 
-	IERC20 public rewardToken = IERC20(0xB0D502E938ed5f4df2E681fE6E419ff29631d62b); // Stargate Token
-	ILpPool public lpToken = ILpPool(0x98a5737749490856b401DB5Dc27F522fC314A4e1); // USDT LP (S*USDT)
+	IERC20 public constant rewardToken = IERC20(0xB0D502E938ed5f4df2E681fE6E419ff29631d62b); // Stargate Token
+	ILpPool public constant lpToken = ILpPool(0x98a5737749490856b401DB5Dc27F522fC314A4e1); // USDT LP (S*USDT)
 
 	IStargateRouter public stargateRouter;
 	uint16 internal liquidityPoolId;
@@ -31,7 +31,7 @@ contract Strategy is BaseStrategy {
 	uint256 public wantDust;
 	uint256 public rewardsDust;
 
-	IMasterChef internal masterChef;
+	IMasterChef public masterChef;
 	uint256 internal masterChefPoolId;
 
 	uint256 internal constant MAX = type(uint256).max;
@@ -315,8 +315,8 @@ contract Strategy is BaseStrategy {
 	}
 
 	function _giveAllowanceRouter() internal {
-		rewardToken.approve(address(router), 0);
-		rewardToken.approve(address(router), MAX);
+		rewardToken.safeApprove(address(router), 0);
+		rewardToken.safeApprove(address(router), MAX);
 	}
 
 	function _giveAllowances() internal {
