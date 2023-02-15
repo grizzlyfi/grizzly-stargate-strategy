@@ -80,7 +80,7 @@ contract Strategy is BaseStrategy {
 	//--------------------------//
 
 	function name() external view override returns (string memory) {
-		return string(abi.encodePacked("SS USDT Stargate Strategy"));
+		return string(abi.encodePacked("SS BUSD Stargate Strategy"));
 	}
 
 	function balanceOfWant() public view returns (uint256) {
